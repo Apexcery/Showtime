@@ -1,21 +1,21 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
+
 using Showtime.Auth.Data;
+using Showtime.Lib.Services;
 
 namespace Showtime.Auth
 {
@@ -51,13 +51,29 @@ namespace Showtime.Auth
                     ValidateAudience = true,
                     ValidIssuer = Configuration["AppSettings:JwtSettings:Issuer"],
                     ValidAudience = Configuration["AppSettings:JwtSettings:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["AppSettings:JwtSettings:SecretKey"]))
+                    IssuerSigningKey =
+                        new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(Configuration["AppSettings:JwtSettings:SecretKey"]))
                 };
             });
 
+            services.AddScoped<IUserService, UserService>();
+
             services.AddControllers();
 
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(options =>
+            {
+                options.AddSecurityDefinition("JWT Bearer Token", new OpenApiSecurityScheme
+                {
+                    Name = "Bearer",
+                    BearerFormat = "JWT",
+                    Scheme = "bearer",
+                    Description = "Specify your authorization token",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http
+                });
+                options.OperationFilter<ApplyOAuth2Security>();
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, RoleManager<IdentityRole> roleManager)
@@ -71,10 +87,7 @@ namespace Showtime.Auth
 
             app.UseSwagger();
 
-            app.UseSwaggerUI(options =>
-            {
-                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Showtime Auth API");
-            });
+            app.UseSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "Showtime Auth API"); });
 
             app.UseRouting();
 
@@ -83,10 +96,38 @@ namespace Showtime.Auth
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+        }
+
+        private class ApplyOAuth2Security : IOperationFilter
+        {
+            /// <inheritdoc/>
+            public void Apply(OpenApiOperation operation, OperationFilterContext context)
             {
-                endpoints.MapControllers();
-            });
+                var authAttributes = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
+                    .Union(context.MethodInfo.GetCustomAttributes(true))
+                    .OfType<AuthorizeAttribute>();
+
+                if (authAttributes.Any())
+                {
+                    var securityRequirement = new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Id = "JWT Bearer Token",
+                                    Type = ReferenceType.SecurityScheme
+                                }
+                            },
+                            new string[] { }
+                        }
+                    };
+                    operation.Security = new List<OpenApiSecurityRequirement> {securityRequirement};
+                    operation.Responses.Add("401", new OpenApiResponse {Description = "Unauthorized"});
+                }
+            }
         }
     }
 }
