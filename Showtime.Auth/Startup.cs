@@ -27,6 +27,8 @@ namespace Showtime.Auth
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+            services.AddSwaggerGen();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,6 +40,13 @@ namespace Showtime.Auth
             }
 
             app.UseHttpsRedirection();
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Showtime Auth API");
+            });
 
             app.UseRouting();
 
