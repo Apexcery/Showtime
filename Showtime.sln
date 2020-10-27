@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.30611.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Showtime.Lib", "Showtime.Lib\Showtime.Lib.csproj", "{BA36BB15-7B40-4BF2-B00B-CB9916003747}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Showtime.Auth", "Showtime.Auth\Showtime.Auth.csproj", "{93D582BD-1DFF-4C00-AD79-120A71358ECB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Showtime.Auth", "Showtime.Auth\Showtime.Auth.csproj", "{93D582BD-1DFF-4C00-AD79-120A71358ECB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Showtime.Web", "Showtime.Web\Showtime.Web.csproj", "{9DDEAFE7-F30A-4726-B214-218BD1E5D1D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{93D582BD-1DFF-4C00-AD79-120A71358ECB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93D582BD-1DFF-4C00-AD79-120A71358ECB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{93D582BD-1DFF-4C00-AD79-120A71358ECB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DDEAFE7-F30A-4726-B214-218BD1E5D1D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DDEAFE7-F30A-4726-B214-218BD1E5D1D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DDEAFE7-F30A-4726-B214-218BD1E5D1D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DDEAFE7-F30A-4726-B214-218BD1E5D1D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
