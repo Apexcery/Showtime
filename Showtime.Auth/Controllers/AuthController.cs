@@ -1,8 +1,13 @@
-﻿using System.Linq;
+﻿using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Showtime.Lib.Models.Auth;
 
 namespace Showtime.Auth.Controllers
@@ -56,6 +61,44 @@ namespace Showtime.Auth.Controllers
                 }
             });
 
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await _userManager.FindByNameAsync(model.UsernameOrEmail) ?? await _userManager.FindByEmailAsync(model.UsernameOrEmail);
+
+            if (user == null)
+                return NotFound("User could not be found.");
+            if (!await _userManager.CheckPasswordAsync(user, model.Password))
+                return BadRequest("Password is incorrect.");
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.Id),
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Role, (await _userManager.GetRolesAsync(user)).First())
+                }),
+                Issuer = _configuration["AppSettings:JwtSettings:Issuer"],
+                Audience = _configuration["AppSettings:JwtSettings:Audience"],
+                Expires = DateTime.UtcNow.AddDays(1),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:JwtSettings:SecretKey"])), SecurityAlgorithms.HmacSha512Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return Ok(new LoginResponse
+            {
+                Token = tokenHandler.WriteToken(token),
+                Expiration = token.ValidTo,
+                Id = user.Id
+            });
         }
     }
 }
