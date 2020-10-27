@@ -45,6 +45,7 @@ namespace Showtime.Auth.Controllers
             if (!result.Succeeded)
                 return BadRequest(result.Errors.Select(x => $"{x.Code} : {x.Description}").ToList());
             
+            // If this is the first user to be added, make them an admin.
             if (_userManager.Users.Count() == 1)
                 await _userManager.AddToRoleAsync(user, "Admin");
                 
@@ -82,13 +83,18 @@ namespace Showtime.Auth.Controllers
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id),
-                    new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.Role, (await _userManager.GetRolesAsync(user)).First())
+                    new Claim(ClaimTypes.Name, user.UserName)
                 }),
                 Issuer = _configuration["AppSettings:JwtSettings:Issuer"],
                 Audience = _configuration["AppSettings:JwtSettings:Audience"],
                 Expires = DateTime.UtcNow.AddDays(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:JwtSettings:SecretKey"])), SecurityAlgorithms.HmacSha512Signature)
+            };
+
+            // Add all of the user's roles to the claims.
+            foreach (var role in await _userManager.GetRolesAsync(user))
+            {
+                tokenDescriptor.Subject.AddClaim(new Claim(ClaimTypes.Role, role));
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
