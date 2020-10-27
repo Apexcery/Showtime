@@ -16,5 +16,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Showtime.Lib\Showtime.Lib.csproj" />
+  </ItemGroup>
+
 
 </Project>
