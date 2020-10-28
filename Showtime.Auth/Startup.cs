@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -17,7 +16,7 @@ using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 using Showtime.Auth.Data;
-using Showtime.Lib.Services;
+using Showtime.Auth.Services;
 
 namespace Showtime.Auth
 {
@@ -44,7 +43,8 @@ namespace Showtime.Auth
                     Configuration.GetConnectionString("ShowtimeConnectionString")));
 
             services.AddIdentity<IdentityUser, IdentityRole>()
-                .AddEntityFrameworkStores<AuthDbContext>();
+                .AddEntityFrameworkStores<AuthDbContext>()
+                .AddTokenProvider("Showtime.Auth", typeof(DataProtectorTokenProvider<IdentityUser>));
 
             services.AddAuthentication(options =>
             {

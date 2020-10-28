@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
+using Showtime.Auth.Services;
 using Showtime.Lib.Models.User;
-using Showtime.Lib.Services;
 
 namespace Showtime.Auth.Controllers
 {
@@ -18,10 +13,12 @@ namespace Showtime.Auth.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, UserManager<IdentityUser> userManager)
         {
             _userService = userService;
+            _userManager = userManager;
         }
 
         [HttpGet("claims")]
@@ -33,7 +30,7 @@ namespace Showtime.Auth.Controllers
             if (currentUser == null)
                 return BadRequest();
 
-            var claims = currentUser.Claims.Select(x => new Lib.Models.User.Claim
+            var claims = currentUser.Claims.Select(x => new Claim
             {
                 Type = x.Type,
                 Value = x.Value
@@ -59,6 +56,27 @@ namespace Showtime.Auth.Controllers
             }).ToList();
 
             return Ok(rolesList);
+        }
+
+        [HttpGet("tokens")]
+        [Authorize]
+        public async Task<IActionResult> GetTokens()
+        {
+            var currentUser = await _userService.GetCurrentIdentityUser(HttpContext.User.Identity);
+
+            if (currentUser == null)
+                return BadRequest();
+
+            Request.Headers.TryGetValue("Authorization", out var authHeader);
+
+            var accessToken = authHeader.ToString().Replace("Bearer", string.Empty).Trim();
+            var refreshToken = await _userManager.GetAuthenticationTokenAsync(currentUser, "Showtime.Auth", "RefreshToken");
+            
+            return Ok(new
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
+            });
         }
     }
 }
