@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,15 +23,18 @@ namespace Showtime.Auth
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
-            Configuration = configuration;
+            // Configuration = configuration;
+            Configuration = new ConfigurationBuilder().SetBasePath(env.ContentRootPath).AddJsonFile(Path.GetFullPath(@"../Showtime.Settings/appSettings.json"), false, true).Build();
         }
 
         public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton(provider => Configuration);
+
             services.AddDbContext<AuthDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("ShowtimeConnectionString")));
@@ -104,9 +109,9 @@ namespace Showtime.Auth
             /// <inheritdoc/>
             public void Apply(OpenApiOperation operation, OperationFilterContext context)
             {
-                var authAttributes = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
+                var authAttributes = context.MethodInfo.DeclaringType?.GetCustomAttributes(true)
                     .Union(context.MethodInfo.GetCustomAttributes(true))
-                    .OfType<AuthorizeAttribute>();
+                    .OfType<AuthorizeAttribute>() ?? new List<AuthorizeAttribute>();
 
                 if (authAttributes.Any())
                 {
