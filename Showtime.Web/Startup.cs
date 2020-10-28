@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,9 +15,14 @@ namespace Showtime.Web
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
-            Configuration = configuration;
+            // Configuration = configuration;
+            Configuration = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile(Path.GetFullPath(@"../Showtime.Settings/appSettings.json"), false, true)
+                .AddJsonFile(Path.GetFullPath(@$"../Showtime.Settings/appSettings.{env.EnvironmentName}.json"), true, true)
+                .Build();
         }
 
         public IConfiguration Configuration { get; }
@@ -24,6 +30,8 @@ namespace Showtime.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton(provider => Configuration);
+
             services.AddControllersWithViews();
         }
 
