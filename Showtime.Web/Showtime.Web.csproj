@@ -8,13 +8,4 @@
     <ProjectReference Include="..\Showtime.Lib\Showtime.Lib.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="../Showtime.Settings/appSettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="../Showtime.Settings/appSettings.Development.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
 </Project>
