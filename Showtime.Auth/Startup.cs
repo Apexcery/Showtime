@@ -26,7 +26,11 @@ namespace Showtime.Auth
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             // Configuration = configuration;
-            Configuration = new ConfigurationBuilder().SetBasePath(env.ContentRootPath).AddJsonFile(Path.GetFullPath(@"../Showtime.Settings/appSettings.json"), false, true).Build();
+            Configuration = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile(Path.GetFullPath(@"../Showtime.Settings/appSettings.json"), false, true)
+                .AddJsonFile(Path.GetFullPath(@$"../Showtime.Settings/appSettings.{env.EnvironmentName}.json"), true, true)
+                .Build();
         }
 
         public IConfiguration Configuration { get; }
