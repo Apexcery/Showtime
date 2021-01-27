@@ -9,7 +9,7 @@ namespace Showtime.Web.Services
 {
     public interface IAuthService
     {
-        Task<IActionResult> Register(RegisterModel model);
+        Task<HttpResponseMessage> Register(RegisterModel model);
         Task<HttpResponseMessage> Login(LoginModel model);
     }
 
@@ -22,14 +22,10 @@ namespace Showtime.Web.Services
             _client = client;
         }
 
-        public async Task<IActionResult> Register(RegisterModel model)
+        public async Task<HttpResponseMessage> Register(RegisterModel model)
         {
             var response = await _client.PostAsJsonAsync(@"/auth/register", model);
-            if (!response.IsSuccessStatusCode)
-                return new BadRequestObjectResult(response);
-
-            var registerResponse = await response.Content.ReadFromJsonAsync<RegisterResponse>();
-            return new OkObjectResult(registerResponse);
+            return response;
         }
 
         public async Task<HttpResponseMessage> Login(LoginModel model)

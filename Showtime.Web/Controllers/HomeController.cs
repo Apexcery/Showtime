@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
@@ -30,7 +31,8 @@ namespace Showtime.Web.Controllers
 
         public IActionResult Index()
         {
-            var loggedIn = HttpContext.Session.TryGetValue("access-token", out var token);
+            var loggedIn = Request.Cookies.TryGetValue("access-token", out var token);
+            // var loggedIn = HttpContext.Session.TryGetValue("access-token", out var token);
             if (!loggedIn)
                 return RedirectToAction("Login", new LoginViewModel());
 
@@ -57,7 +59,9 @@ namespace Showtime.Web.Controllers
                 if (loginResponse == null)
                     return BadRequest();
 
-                HttpContext.Session.SetString("access-token", loginResponse.Token);
+                var cookieOptions = new CookieOptions { Expires = loginResponse.Expiration };
+                Response.Cookies.Append("access-token", loginResponse.Token, cookieOptions);
+                // HttpContext.Session.SetString("access-token", loginResponse.Token);
                 return RedirectToAction("Index");
             }
 
@@ -88,9 +92,66 @@ namespace Showtime.Web.Controllers
 
         [HttpPost]
         [Route("Register")]
-        public IActionResult Register(RegisterModel model)
+        public async Task<IActionResult> Register(RegisterModel model)
         {
-            return Ok();
+            if (!ModelState.IsValid)
+                return View("Login", new LoginViewModel
+                {
+                    ErrorMessages =
+                    {
+                        "Register details were not valid."
+                    }
+                });
+
+            var response = await _authService.Register(model);
+            if (response.IsSuccessStatusCode)
+            {
+                var registerResponse = await response.Content.ReadFromJsonAsync<RegisterResponse>();
+                if (registerResponse == null)
+                    return BadRequest();
+
+                var loginModel = new LoginModel
+                {
+                    UsernameOrEmail = model.Username,
+                    Password = model.Password
+                };
+
+                var loginResponse = await _authService.Login(loginModel);
+                if (loginResponse.IsSuccessStatusCode)
+                {
+                    var loginResponseModel = await loginResponse.Content.ReadFromJsonAsync<LoginResponse>();
+                    if (loginResponseModel == null)
+                        return BadRequest();
+
+                    var cookieOptions = new CookieOptions{ Expires = loginResponseModel.Expiration};
+                    Response.Cookies.Append("access-token", loginResponseModel.Token, cookieOptions);
+                    // HttpContext.Session.SetString("access-token", loginResponseModel.Token);
+                    return RedirectToAction("Index");
+                }
+            }
+
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            var loginViewModel = new LoginViewModel();
+
+            var error = JsonConvert.DeserializeObject<Error>(responseString);
+            if (error.StatusCode == 0 && string.IsNullOrEmpty(error.ErrorMessage))
+            {
+                var validationError = JsonConvert.DeserializeObject<LoginValidationError>(responseString);
+                var validationErrorList = new List<string>();
+                if (validationError.Errors.UsernameOrEmail != null)
+                    validationErrorList.AddRange(validationError.Errors.UsernameOrEmail);
+                if (validationError.Errors.Password != null)
+                    validationErrorList.AddRange(validationError.Errors.Password);
+                foreach (var errorMessage in validationErrorList)
+                {
+                    loginViewModel.ErrorMessages.Add(errorMessage);
+                }
+            }
+            else
+                loginViewModel.ErrorMessages.Add(error.ErrorMessage);
+
+            return View("Login", loginViewModel);
         }
 
         [Route("Error/{code:int?}")]
