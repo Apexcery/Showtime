@@ -1,9 +1,15 @@
+using System;
 using System.IO;
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileSystemGlobbing.Internal.Patterns;
 using Microsoft.Extensions.Hosting;
+using Showtime.Web.Data;
+using Showtime.Web.Services;
 
 namespace Showtime.Web
 {
@@ -25,6 +31,16 @@ namespace Showtime.Web
         {
             services.AddSingleton(provider => Configuration);
 
+            var projectBaseUrls = Configuration.GetSection("AppSettings:ProjectBaseUrls").Get<ProjectBaseUrls>();
+            
+            services.AddHttpClient<IAuthService, AuthService>("AuthApi", client =>
+            {
+                client.BaseAddress = new Uri(projectBaseUrls.AuthBaseUrl);
+            });
+
+            services.AddDistributedMemoryCache();
+            services.AddSession();
+
             services.AddControllersWithViews();
         }
 
@@ -36,15 +52,17 @@ namespace Showtime.Web
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                app.UseExceptionHandler("/Error");
 
                 app.UseHsts();
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            app.UseRouting();
+            app.UseSession();
 
+            app.UseRouting();
+            
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
