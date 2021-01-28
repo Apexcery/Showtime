@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.Configuration;
-using Showtime.Web.Data;
-using Showtime.Web.Enums.Tmdb;
 
 namespace Showtime.Web.Models.TmdbModels
 {

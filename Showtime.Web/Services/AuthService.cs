@@ -1,8 +1,6 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc;
-
 using Showtime.Lib.Models.Auth;
 
 namespace Showtime.Web.Services

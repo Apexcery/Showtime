@@ -1,5 +1,3 @@
-using System;
-
 namespace Showtime.Web.Models
 {
     public class ErrorViewModel

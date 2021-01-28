@@ -1,16 +1,9 @@
-using System;
-using System.IO;
-using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileSystemGlobbing.Internal.Patterns;
 using Microsoft.Extensions.Hosting;
-using Showtime.Web.Data;
 using Showtime.Web.Extensions;
-using Showtime.Web.Services;
 
 namespace Showtime.Web
 {
