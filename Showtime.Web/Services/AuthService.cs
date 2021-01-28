@@ -24,13 +24,13 @@ namespace Showtime.Web.Services
 
         public async Task<HttpResponseMessage> Register(RegisterModel model)
         {
-            var response = await _client.PostAsJsonAsync(@"/auth/register", model);
+            var response = await _client.PostAsJsonAsync(@"auth/register", model);
             return response;
         }
 
         public async Task<HttpResponseMessage> Login(LoginModel model)
         {
-            var response = await _client.PostAsJsonAsync(@"/auth/login", model);
+            var response = await _client.PostAsJsonAsync(@"auth/login", model);
             return response;
         }
     }

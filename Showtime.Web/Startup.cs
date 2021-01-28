@@ -32,7 +32,7 @@ namespace Showtime.Web
             services.AddDistributedMemoryCache();
             services.AddSession();
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews().AddRazorRuntimeCompilation();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -1,0 +1,12 @@
+﻿@model Showtime.Web.Models.TmdbModels.BasicMovieDetails
+
+<div class="card" style="width: 18rem">
+    <img class="card-img-top" src="@($"{Model.PosterBasePath}{Model.PosterPath}")" style="max-height: 400px" alt="'@(Model.Title)' Poster"/>
+    <div class="card-body">
+        <h5 class="card-title">@(Model.Title)</h5>
+        <p class="card-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" data-toggle="tooltip" data-placement="top" title="@(Model.Overview)">@(Model.Overview)</p>
+    </div>
+    <div class="card-footer">
+        <small class="text-muted">@(Model.ReleaseDate)</small>
+    </div>
+</div>

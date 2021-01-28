@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Showtime.Lib.Models;
 using Showtime.Lib.Models.Auth;
+using Showtime.Web.Enums.Tmdb;
 using Showtime.Web.Models;
 using Showtime.Web.Services;
 
@@ -20,23 +21,25 @@ namespace Showtime.Web.Controllers
     [Route("")]
     public class HomeController : Controller
     {
-        private readonly IConfiguration _configuration;
         private readonly IAuthService _authService;
+        private readonly ITmdbService _tmdbService;
 
-        public HomeController(IConfiguration configuration, IAuthService authService)
+        public HomeController(IAuthService authService, ITmdbService tmdbService)
         {
-            _configuration = configuration;
             _authService = authService;
+            _tmdbService = tmdbService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             var loggedIn = Request.Cookies.TryGetValue("access-token", out var token);
             // var loggedIn = HttpContext.Session.TryGetValue("access-token", out var token);
             if (!loggedIn)
                 return RedirectToAction("Login", new LoginViewModel());
 
-            return View();
+            var trendingMovies = await _tmdbService.GetTrendingMovies(TimeWindow.Day);
+
+            return View(trendingMovies);
         }
 
         [Route("Login")]

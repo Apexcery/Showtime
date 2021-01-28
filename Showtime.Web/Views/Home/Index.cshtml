@@ -1,8 +1,17 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IList<Showtime.Web.Models.TmdbModels.BasicMovieDetails>
+@{
+    ViewData["Title"] = "Trending";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="pb-2 mt-4 mb-4 border-bottom text-center">
+    <h1>Trending Movies</h1>
+</div>
+
+<div class="card-deck justify-content-center">
+    @foreach (var movie in Model)
+    {
+        <div class="col-auto mb-3">
+            @{ await Html.RenderPartialAsync("~/WebFragments/MediaCard.cshtml", movie);}
+        </div>
+    }
 </div>
