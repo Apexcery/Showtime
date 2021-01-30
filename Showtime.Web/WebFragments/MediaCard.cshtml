@@ -1,12 +1,45 @@
-﻿@model Showtime.Web.Models.TmdbModels.BasicMovieDetails
+﻿@model Showtime.Web.Models.TmdbModels.BasicMediaDetails
 
-<div class="card" style="width: 18rem">
-    <img class="card-img-top" src="@($"{Model.PosterBasePath}{Model.PosterPath}")" style="max-height: 400px" alt="'@(Model.Title)' Poster"/>
+@{
+    var isSearchPage = ViewBag.SearchQuery != null;
+    var borderCss = "";
+
+    if (isSearchPage)
+    {
+        var isMovie = Model.MediaType == "movie";
+        var isTv = Model.MediaType == "tv";
+        if (isMovie)
+        {
+            borderCss = "border: 2px solid #B71C1C;";
+        }
+        else if (isTv)
+        {
+            borderCss = "border: 2px solid #311B92;";
+        }
+        else
+        {
+            borderCss = "border: 2px solid #1B5E20;";
+        }
+    }
+
+    var fullPosterPath = "";
+    if (string.IsNullOrEmpty(Model.PosterPath))
+    {
+        fullPosterPath = "/img/placeholders/poster-placeholder.png";
+    }
+    else
+    {
+        fullPosterPath = $"{Model.PosterBasePath}{Model.PosterPath}";
+    }
+}
+
+<div class="card" style="width: 18rem; @borderCss">
+    <img class="card-img-top" src="@fullPosterPath" style="max-height: 400px" alt="'@(Model.Title)' Poster" data-toggle="tooltip" data-placement="top" title="@(string.IsNullOrEmpty(Model.PosterPath) ? "No Poster Found" : "")" />
     <div class="card-body">
         <h5 class="card-title">@(Model.Title)</h5>
         <p class="card-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" data-toggle="tooltip" data-placement="top" title="@(Model.Overview)">@(Model.Overview)</p>
     </div>
     <div class="card-footer">
-        <small class="text-muted">@(Model.ReleaseDate)</small>
+        <small class="text-muted">@(Model.MediaType == "movie" ? "Release Date: " : "First Aired: ")@(Model.ReleaseDate)</small>
     </div>
 </div>

@@ -1,14 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Showtime.Lib.Models;
 using Showtime.Lib.Models.Auth;
 using Showtime.Web.Enums.Tmdb;
 using Showtime.Web.Models;
 using Showtime.Web.Services;
+using Showtime.Web.ViewModels;
 
 namespace Showtime.Web.Controllers
 {
@@ -32,8 +35,15 @@ namespace Showtime.Web.Controllers
                 return RedirectToAction("Login", new LoginViewModel());
 
             var trendingMovies = await _tmdbService.GetTrendingMovies(TimeWindow.Day);
+            var trendingTv = await _tmdbService.GetTrendingTv(TimeWindow.Day);
 
-            return View(trendingMovies);
+            var viewModel = new HomeViewModel
+            {
+                Movies = trendingMovies,
+                Tv = trendingTv
+            };
+
+            return View(viewModel);
         }
 
         [Route("Login")]
@@ -149,6 +159,23 @@ namespace Showtime.Web.Controllers
                 loginViewModel.ErrorMessages.Add(error.ErrorMessage);
 
             return View("Login", loginViewModel);
+        }
+
+        [Route("Search")]
+        public async Task<IActionResult> Search(string searchQuery)
+        {
+            if (string.IsNullOrEmpty(searchQuery))
+                return RedirectToAction("Index");
+
+            var searchResults = await _tmdbService.Search(searchQuery);
+            
+            var viewModel = new SearchViewModel
+            {
+                SearchQuery = searchQuery,
+                SearchResults = searchResults
+            };
+
+            return View(viewModel);
         }
 
         [Route("Error/{code:int?}")]

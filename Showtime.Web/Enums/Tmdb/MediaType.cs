@@ -1,4 +1,4 @@
-﻿namespace Showtime.Web.Enums
+﻿namespace Showtime.Web.Enums.Tmdb
 {
     public enum MediaType
     {
