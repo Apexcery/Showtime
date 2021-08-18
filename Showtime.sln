@@ -9,12 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Showtime.Auth", "Showtime.A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Showtime.Web", "Showtime.Web\Showtime.Web.csproj", "{9DDEAFE7-F30A-4726-B214-218BD1E5D1D9}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Showtime.Settings", "Showtime.Settings", "{051825A9-830D-4E39-A89F-0B4BBC232BD9}"
-	ProjectSection(SolutionItems) = preProject
-		Showtime.Settings\appsettings.Development.json = Showtime.Settings\appsettings.Development.json
-		Showtime.Settings\appsettings.json = Showtime.Settings\appsettings.json
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

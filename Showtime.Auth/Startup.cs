@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -25,12 +23,7 @@ namespace Showtime.Auth
     {
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
-            // Configuration = configuration;
-            Configuration = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile(Path.GetFullPath(@"../Showtime.Settings/appSettings.json"), false, true)
-                .AddJsonFile(Path.GetFullPath(@$"../Showtime.Settings/appSettings.{env.EnvironmentName}.json"), true, true)
-                .Build();
+            Configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
@@ -42,9 +35,10 @@ namespace Showtime.Auth
             services.AddDbContext<AuthDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("ShowtimeConnectionString")));
-
+            
             services.AddIdentity<IdentityUser, IdentityRole>()
-                .AddEntityFrameworkStores<AuthDbContext>();
+                .AddEntityFrameworkStores<AuthDbContext>()
+                .AddDefaultTokenProviders();
 
             services.AddAuthentication(options =>
             {
@@ -99,6 +93,12 @@ namespace Showtime.Auth
             app.UseSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "Showtime Auth API"); });
 
             app.UseRouting();
+
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                var context = serviceScope.ServiceProvider.GetRequiredService<AuthDbContext>();
+                context.Database.Migrate();
+            }
 
             AuthDbInitializer.SeedRoles(roleManager);
 

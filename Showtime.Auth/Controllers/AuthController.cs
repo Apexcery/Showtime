@@ -4,10 +4,12 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Showtime.Lib.Models;
 using Showtime.Lib.Models.Auth;
 
 namespace Showtime.Auth.Controllers
@@ -32,7 +34,10 @@ namespace Showtime.Auth.Controllers
                 return BadRequest(ModelState);
 
             if (await _userManager.FindByNameAsync(model.Username) != null)
-                return BadRequest("Username is already in use.");
+                return BadRequest(new Error{
+                    StatusCode = StatusCodes.Status409Conflict,
+                    ErrorMessage = "Username is already in use."
+                });
 
             var user = new IdentityUser
             {
@@ -43,7 +48,11 @@ namespace Showtime.Auth.Controllers
             var result = await _userManager.CreateAsync(user, model.Password);
             
             if (!result.Succeeded)
-                return BadRequest(result.Errors.Select(x => $"{x.Code} : {x.Description}").ToList());
+                return BadRequest(new Error
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError,
+                    ErrorMessage = "User could not be created, try again later."
+                });
             
             // If this is the first user to be added, make them an admin.
             if (_userManager.Users.Count() == 1)
@@ -73,9 +82,17 @@ namespace Showtime.Auth.Controllers
             var user = await _userManager.FindByNameAsync(model.UsernameOrEmail) ?? await _userManager.FindByEmailAsync(model.UsernameOrEmail);
 
             if (user == null)
-                return NotFound("User could not be found.");
+                return NotFound(new Error
+                {
+                    StatusCode = StatusCodes.Status404NotFound,
+                    ErrorMessage = "Username could not be found."
+                });
             if (!await _userManager.CheckPasswordAsync(user, model.Password))
-                return BadRequest("Password is incorrect.");
+                return Unauthorized(new Error
+                {
+                    StatusCode = StatusCodes.Status401Unauthorized,
+                    ErrorMessage = "The entered password was incorrect."
+                });
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor
