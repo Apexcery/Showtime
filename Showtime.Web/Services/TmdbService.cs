@@ -8,6 +8,7 @@ using Showtime.Web.Data;
 using Showtime.Web.Enums.Tmdb;
 using Showtime.Web.Models.TmdbModels;
 using Showtime.Web.Models.TmdbModels.ApiResults;
+using Showtime.Web.Models.TmdbModels.FullDetails;
 
 namespace Showtime.Web.Services
 {
@@ -16,6 +17,7 @@ namespace Showtime.Web.Services
         public Task<IList<BasicMediaDetails>> GetTrendingMovies(TimeWindow timeWindow);
         public Task<IList<BasicMediaDetails>> GetTrendingTv(TimeWindow timeWindow);
         public Task<IList<BasicMediaDetails>> Search(string searchQuery);
+        public Task<Movie> GetFullMovieDetails(int movieId);
     }
 
     public class TmdbService : ITmdbService
@@ -38,11 +40,10 @@ namespace Showtime.Web.Services
 
             var jsonString = await result.Content.ReadAsStringAsync();
 
+            var tmdbApi = _config.GetSection("AppSettings:ExternalApis").Get<ExternalApis>().Tmdb;
             var movieList = JsonConvert.DeserializeObject<TrendingMoviesApiResult>(jsonString).Movies
                 .Select(movie =>
                 {
-                    var tmdbApi = _config.GetSection("AppSettings:ExternalApis").Get<ExternalApis>().Tmdb;
-                
                     movie.BackdropBasePath = $"{tmdbApi.ImageBasePath}{BackdropSize.w780}";
                     movie.PosterBasePath = $"{tmdbApi.ImageBasePath}{PosterSize.w500}";
                 
@@ -61,11 +62,10 @@ namespace Showtime.Web.Services
 
             var jsonString = await result.Content.ReadAsStringAsync();
 
+            var tmdbApi = _config.GetSection("AppSettings:ExternalApis").Get<ExternalApis>().Tmdb;
             var tvList = JsonConvert.DeserializeObject<TrendingTvApiResult>(jsonString).Tv
                 .Select(tv =>
                 {
-                    var tmdbApi = _config.GetSection("AppSettings:ExternalApis").Get<ExternalApis>().Tmdb;
-
                     tv.BackdropBasePath = $"{tmdbApi.ImageBasePath}{BackdropSize.w780}";
                     tv.PosterBasePath = $"{tmdbApi.ImageBasePath}{PosterSize.w500}";
 
@@ -86,11 +86,10 @@ namespace Showtime.Web.Services
 
             var jsonString = await result.Content.ReadAsStringAsync();
 
+            var tmdbApi = _config.GetSection("AppSettings:ExternalApis").Get<ExternalApis>().Tmdb;
             var searchResults = JsonConvert.DeserializeObject<SearchApiResult>(jsonString).Results
                 .Select(result =>
                 {
-                    var tmdbApi = _config.GetSection("AppSettings:ExternalApis").Get<ExternalApis>().Tmdb;
-
                     result.BackdropBasePath = $"{tmdbApi.ImageBasePath}{BackdropSize.w780}";
                     result.PosterBasePath = $"{tmdbApi.ImageBasePath}{PosterSize.w500}";
 
@@ -98,6 +97,25 @@ namespace Showtime.Web.Services
                 }).ToList();
 
             return searchResults;
+        }
+
+        public async Task<Movie> GetFullMovieDetails(int movieId)
+        {
+            var result = await _client.GetAsync($@"movie/{movieId}");
+
+            if (!result.IsSuccessStatusCode)
+                return null;
+
+            var jsonString = await result.Content.ReadAsStringAsync();
+
+            var movieDetails = JsonConvert.DeserializeObject<Movie>(jsonString);
+
+            var tmdbApi = _config.GetSection("AppSettings:ExternalApis").Get<ExternalApis>().Tmdb;
+
+            movieDetails.BackdropBasePath = $"{tmdbApi.ImageBasePath}{BackdropSize.w780}";
+            movieDetails.PosterBasePath = $"{tmdbApi.ImageBasePath}{PosterSize.w500}";
+
+            return movieDetails;
         }
     }
 }

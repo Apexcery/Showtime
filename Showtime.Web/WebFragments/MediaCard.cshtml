@@ -3,10 +3,11 @@
 @{
     var isSearchPage = ViewBag.SearchQuery != null;
     var borderCss = "";
+    
+    var isMovie = Model.MediaType == "movie";
 
     if (isSearchPage)
     {
-        var isMovie = Model.MediaType == "movie";
         var isTv = Model.MediaType == "tv";
         if (isMovie)
         {
@@ -23,6 +24,7 @@
     }
 
     var fullPosterPath = "";
+    var onClickLocation = "";
     if (string.IsNullOrEmpty(Model.PosterPath))
     {
         fullPosterPath = "/img/placeholders/poster-placeholder.png";
@@ -31,15 +33,23 @@
     {
         fullPosterPath = $"{Model.PosterBasePath}{Model.PosterPath}";
     }
+
+    if (isMovie)
+    {
+        onClickLocation = Url.Action("Movie", "Media", new {movieId = Model.Id});
+    }
 }
 
-<div class="card" style="width: 18rem; @borderCss">
-    <img class="card-img-top" src="@fullPosterPath" style="max-height: 400px" alt="'@(Model.Title)' Poster" data-toggle="tooltip" data-placement="top" title="@(string.IsNullOrEmpty(Model.PosterPath) ? "No Poster Found" : "")" />
-    <div class="card-body">
-        <h5 class="card-title">@(Model.Title)</h5>
-        <p class="card-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" data-toggle="tooltip" data-placement="top" title="@(Model.Overview)">@(Model.Overview)</p>
+
+<a href="@onClickLocation" class="card-hover stretched-link">
+    <div class="card" style="width: 18rem;@borderCss">
+        <img class="card-img-top" src="@fullPosterPath" style="max-height: 400px" alt="'@(Model.Title)' Poster" data-toggle="tooltip" data-placement="top" title="@(string.IsNullOrEmpty(Model.PosterPath) ? "No Poster Found" : "")" />
+        <div class="card-body">
+            <h5 class="card-title">@(Model.Title)</h5>
+            <p class="card-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" data-toggle="tooltip" data-placement="top" title="@(Model.Overview)">@(Model.Overview)</p>
+        </div>
+        <div class="card-footer">
+            <small class="text-muted">@(Model.MediaType == "movie" ? "Release Date: " : "First Aired: ")@(Model.ReleaseDate)</small>
+        </div>
     </div>
-    <div class="card-footer">
-        <small class="text-muted">@(Model.MediaType == "movie" ? "Release Date: " : "First Aired: ")@(Model.ReleaseDate)</small>
-    </div>
-</div>
+</a>
