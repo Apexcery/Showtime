@@ -1,0 +1,43 @@
+﻿@model Showtime.Web.ViewModels.SearchViewModel
+@{
+    ViewData["Title"] = "Search";
+    ViewBag.SearchQuery = Model.SearchQuery;
+}
+
+<div class="pb-2 mt-2 mb-4 border-bottom text-center">
+    <div class="row">
+        <div class="col">
+            <h1 class="d-inline-block">Search Results : '@Model.SearchQuery'<span class="ml-3"><i class="fas fa-question-circle fa-xs" data-toggle="modal" data-target="#searchModal"></i></span></h1>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="searchModalLabel">Searching Help</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-left">
+                    <h5 style="text-decoration: underline">Colors:</h5>
+                    <ul>
+                        <li><span style="color: #B71C1C">Red: </span>Movie</li>
+                        <li><span style="color: #311B92">Purple: </span>TV</li>
+                        <li><span style="color: #1B5E20">Green: </span>Person</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-deck justify-content-center mt-4">
+        @foreach (var movie in Model.SearchResults)
+        {
+            <div class="col-auto mb-3">
+                @{ await Html.RenderPartialAsync("~/WebFragments/MediaCard.cshtml", movie);}
+            </div>
+        }
+    </div>
+</div>
