@@ -79,7 +79,7 @@ namespace Showtime.Web.Services
         {
             var includeAdult = false;
 
-            var result = await _client.GetAsync(@$"search/multi?query=snowpiercer&page=1&include_adult={includeAdult}");
+            var result = await _client.GetAsync(@$"search/multi?query={searchQuery}&page=1&include_adult={includeAdult}");
 
             if (!result.IsSuccessStatusCode)
                 return null;
