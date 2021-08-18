@@ -34,7 +34,7 @@ namespace Showtime.Auth
 
             services.AddDbContext<AuthDbContext>(options =>
                 options.UseSqlServer(
-                    Configuration.GetConnectionString("ShowtimeConnectionString")));
+                    Configuration.GetConnectionString("ShowtimeConnectionStringPublic")));
             
             services.AddIdentity<IdentityUser, IdentityRole>()
                 .AddEntityFrameworkStores<AuthDbContext>()

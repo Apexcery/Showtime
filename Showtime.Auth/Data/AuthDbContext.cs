@@ -16,7 +16,7 @@ namespace Showtime.Auth.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("ShowtimeConnectionString"),
+            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("ShowtimeConnectionStringPublic"),
                 x => x.MigrationsHistoryTable("__MigrationHistory", "Auth"));
         }
 

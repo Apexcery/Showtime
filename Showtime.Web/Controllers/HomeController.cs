@@ -67,7 +67,7 @@ namespace Showtime.Web.Controllers
                     return BadRequest();
 
                 var cookieOptions = new CookieOptions { Expires = loginResponse.Expiration };
-                Response.Cookies.Append("access-token", loginResponse.Token, cookieOptions);
+                Response.Cookies.Append("access-token", loginResponse.AccessToken, cookieOptions);
                 // HttpContext.Session.SetString("access-token", loginResponse.Token);
                 return RedirectToAction("Index");
             }
@@ -131,7 +131,7 @@ namespace Showtime.Web.Controllers
                         return BadRequest();
 
                     var cookieOptions = new CookieOptions{ Expires = loginResponseModel.Expiration};
-                    Response.Cookies.Append("access-token", loginResponseModel.Token, cookieOptions);
+                    Response.Cookies.Append("access-token", loginResponseModel.AccessToken, cookieOptions);
                     // HttpContext.Session.SetString("access-token", loginResponseModel.Token);
                     return RedirectToAction("Index");
                 }
