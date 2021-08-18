@@ -4,7 +4,7 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 
-namespace Showtime.Lib.Services
+namespace Showtime.Auth.Services
 {
     public interface IUserService
     {

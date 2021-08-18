@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -104,7 +105,7 @@ namespace Showtime.Auth.Controllers
                 }),
                 Issuer = _configuration["AppSettings:JwtSettings:Issuer"],
                 Audience = _configuration["AppSettings:JwtSettings:Audience"],
-                Expires = DateTime.UtcNow.AddDays(1),
+                Expires = DateTime.UtcNow.AddMinutes(30),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:JwtSettings:SecretKey"])), SecurityAlgorithms.HmacSha512Signature)
             };
 
@@ -115,13 +116,70 @@ namespace Showtime.Auth.Controllers
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
+            var refreshToken = await RefreshToken(user);
 
             return Ok(new LoginResponse
             {
-                Token = tokenHandler.WriteToken(token),
+                UserId = user.Id,
+                AccessToken = tokenHandler.WriteToken(token),
                 Expiration = token.ValidTo,
-                Id = user.Id
+                RefreshToken = refreshToken
             });
+        }
+
+        [Authorize]
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+                return NotFound("Invalid UserID");
+
+            var isValid = await _userManager.VerifyUserTokenAsync(user, "Showtime.Auth", "RefreshToken", model.RefreshToken);
+            if (!isValid)
+                return BadRequest("Refresh token is not valid.");
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.Id),
+                    new Claim(ClaimTypes.Name, user.UserName)
+                }),
+                Issuer = _configuration["AppSettings:JwtSettings:Issuer"],
+                Audience = _configuration["AppSettings:JwtSettings:Audience"],
+                Expires = DateTime.UtcNow.AddMinutes(30),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AppSettings:JwtSettings:SecretKey"])), SecurityAlgorithms.HmacSha512Signature)
+            };
+
+            foreach (var role in await _userManager.GetRolesAsync(user))
+            {
+                tokenDescriptor.Subject.AddClaim(new Claim(ClaimTypes.Role, role));
+            }
+
+            var newAccessToken = tokenHandler.CreateToken(tokenDescriptor);
+
+            var newRefreshToken = await RefreshToken(user);
+
+            return Ok(new RefreshResponse
+            {
+                UserId = user.Id,
+                NewAccessToken = tokenHandler.WriteToken(newAccessToken),
+                NewRefreshToken = newRefreshToken
+            });
+        }
+
+        private async Task<string> RefreshToken(IdentityUser user)
+        {
+            await _userManager.RemoveAuthenticationTokenAsync(user, "Showtime.Auth", "RefreshToken");
+            var newRefreshToken = await _userManager.GenerateUserTokenAsync(user, "Showtime.Auth", "RefreshToken");
+            await _userManager.SetAuthenticationTokenAsync(user, "Showtime.Auth", "RefreshToken", newRefreshToken);
+
+            return newRefreshToken;
         }
     }
 }
