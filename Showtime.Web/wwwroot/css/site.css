@@ -7,6 +7,10 @@ a.navbar-brand {
   word-break: break-all;
 }
 
+.nav-link:hover {
+    text-decoration: underline;
+}
+
 /* Provide sufficient contrast against white background */
 a {
   color: #0366d6;

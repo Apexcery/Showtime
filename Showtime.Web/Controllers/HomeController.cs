@@ -30,6 +30,7 @@ namespace Showtime.Web.Controllers
         public async Task<IActionResult> Index()
         {
             var loggedIn = Request.Cookies.TryGetValue("access-token", out var token);
+            var headers = Response.Headers.Values;
             // var loggedIn = HttpContext.Session.TryGetValue("access-token", out var token);
             if (!loggedIn)
                 return RedirectToAction("Login", new LoginViewModel());
@@ -46,9 +47,21 @@ namespace Showtime.Web.Controllers
             return View(viewModel);
         }
 
+        [Route("SignOut")]
+        public async Task<IActionResult> SignOut()
+        {
+            Response.Cookies.Delete("access-token");
+            return RedirectToAction("Index");
+        }
+
         [Route("Login")]
         public IActionResult Login()
         {
+            var loggedIn = Request.Cookies.TryGetValue("access-token", out var token);
+            // var loggedIn = HttpContext.Session.TryGetValue("access-token", out var token);
+            if (loggedIn)
+                return RedirectToAction("Index");
+
             return View(new LoginViewModel());
         }
 
@@ -66,7 +79,7 @@ namespace Showtime.Web.Controllers
                 if (loginResponse == null)
                     return BadRequest();
 
-                var cookieOptions = new CookieOptions { Expires = loginResponse.Expiration };
+                var cookieOptions = new CookieOptions { Expires = loginResponse.Expiration, HttpOnly = true };
                 Response.Cookies.Append("access-token", loginResponse.AccessToken, cookieOptions);
                 // HttpContext.Session.SetString("access-token", loginResponse.Token);
                 return RedirectToAction("Index");
