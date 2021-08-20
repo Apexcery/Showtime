@@ -1,0 +1,119 @@
+﻿@model LoginViewModel
+@{
+    Layout = "";
+}
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | Showtime</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./css/site.css" />
+</head>
+<body class="m-0 p-0 overflow-hidden">
+
+    <header class="m-0 p-0">
+        <nav class="navbar navbar-dark bg-dark ">
+            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Showtime</a>
+            <div>
+                <form class="form-inline m-0" asp-action="Login">
+                    <div class="form-group">
+                        <input type="text" class="form-control mr-sm-2" name="UsernameOrEmail" placeholder="Username or Email Address"/>
+                        <input type="password" class="form-control mr-sm-2" name="Password" placeholder="Password"/>
+                        <button class="btn btn-outline-primary my-sm-0" type="submit">Login</button>
+                    </div>
+                </form>
+            </div>
+        </nav>
+    </header>
+    
+    <div class="modal" tabindex="-1" role="dialog" id="errorModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Error</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    @foreach (var error in Model.ErrorMessages)
+                    {
+                    <p>@error</p>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row m-0 p-0" style="height: 100vh; width: 100vw">
+        <!--Slideshow of images/features?-->
+        <div class="col-5 m-0 p-0 overflow-hidden">
+            <img src="img/temp-home-bg.jpeg" class="m-0 p-0 position-relative" id="login-image" alt="Movie poster collage"/>
+        </div>
+        <div class="col-7 w-100 h-100" style="background-color: #eee">
+            <div class="container d-table align-self-center h-100 mt-5">
+                <div class="container d-table-cell"> <!-- align-middle -->
+                    <div class="card text-center shadow-sm">
+                        <div class="card-header">
+                            <h3>Register</h3>
+                        </div>
+                        <div class="card-body pb-0">
+                            <form asp-action="Register">
+                                <div class="form-row text-left">
+                                    <div class="form-group col-6">
+                                        <label for="forename">Forename</label>
+                                        <input type="text" class="form-control" id="forename" name="Forename" placeholder="John" required/>
+                                    </div>
+                                    <div class="form-group col-6">
+                                        <label for="surname">Surname</label>
+                                        <input type="text" class="form-control" id="surname" name="Surname" placeholder="Smith" required />
+                                    </div>
+                                </div>
+                                <div class="form-row text-left">
+                                    <div class="form-group col-4">
+                                        <label for="username">Username</label>
+                                        <input type="text" class="form-control" id="username" name="Username" placeholder="Username" required />
+                                    </div>
+                                    <div class="form-group col-8">
+                                        <label for="email">Email Address</label>
+                                        <input type="email" class="form-control" id="email" name="Email" placeholder="example@domain.com" required />
+                                    </div>
+                                </div>
+                                <div class="form-row text-left">
+                                    <div class="form-group col-6">
+                                        <label for="password">Password</label>
+                                        <input type="password" class="form-control" id="password" name="Password" placeholder="?Password123!" required />
+                                    </div>
+                                    <div class="form-group col-6">
+                                        <label for="confirmPassword">Confirm Password</label>
+                                        <input type="password" class="form-control" id="confirmPassword" name="ConfirmPassword" placeholder="?Password123!" required oninput="this.setCustomValidity(this.value != Password.value ? 'Passwords do not match.' : '')" />
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-50 mt-2 mb-1">Register</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    @{
+        var errorCount = Model.ErrorMessages.Count;
+    }
+
+    <script>
+        var hasErrors = @errorCount > 0;
+        if (hasErrors) {
+            $('#errorModal').modal();
+        }
+    </script>
+</body>
