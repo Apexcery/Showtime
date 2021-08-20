@@ -5,6 +5,8 @@ using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using Google.Android.Material.BottomNavigation;
+using Showtime.Mob.Enums;
+using Showtime.Mob.Fragments;
 
 namespace Showtime.Mob
 {
@@ -39,15 +41,35 @@ namespace Showtime.Mob
         {
             item.SetChecked(true);
 
-            switch (item.ItemId)
+            return item.ItemId switch
             {
-                case Resource.Id.action_trending:
-                    return true;
-                case Resource.Id.action_user:
-                    return true;
-            }
+                Resource.Id.action_trending => TryChangeMainFragment(FragmentEnum.Trending),
+                Resource.Id.action_user => TryChangeMainFragment(FragmentEnum.User),
+                _ => false
+            };
+        }
 
-            return false;
+        public bool TryChangeMainFragment(FragmentEnum fragmentEnum)
+        {
+            switch (fragmentEnum)
+            {
+                case FragmentEnum.Trending:
+                    SupportFragmentManager.BeginTransaction()
+                        .Replace(Resource.Id.main_content, new TrendingFragment())
+                        .SetReorderingAllowed(true)
+                        .AddToBackStack("trending")
+                        .Commit();
+                    return true;
+                case FragmentEnum.User:
+                    SupportFragmentManager.BeginTransaction()
+                        .Replace(Resource.Id.main_content, new UserFragment())
+                        .SetReorderingAllowed(true)
+                        .AddToBackStack("user")
+                        .Commit();
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 }
