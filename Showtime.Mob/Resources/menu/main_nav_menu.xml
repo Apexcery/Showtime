@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+  
+  <item
+      android:id="@+id/action_trending"
+      android:showAsAction="always"
+      android:checked="true"
+      android:icon="@drawable/ic_trending"
+      android:title="Trending"/>
+  
+  <item
+      android:id="@+id/action_user"
+      android:showAsAction="always"
+      android:checked="false"
+      android:icon="@drawable/ic_user"
+      android:title="User"/>
+</menu>
